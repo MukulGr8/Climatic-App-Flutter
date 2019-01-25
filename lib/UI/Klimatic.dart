@@ -10,24 +10,27 @@ class Klimatic extends StatefulWidget {
 }
 
 class _KlimaticState extends State<Klimatic> {
-   String _cityEntered;
+   String _cityEntered=util.defaultCity;
   //Going to the next Screen
   Future _goToNextScreen(BuildContext context) async{
      Map results = await Navigator.of(context).push(
        new MaterialPageRoute<Map>(builder: (BuildContext context){
-         return new changeCity();
+         return new ChangeCity();
        }),
      );
      if(results != null && results.containsKey('enter')){
 //       print(results['enter'].toString());
-     _cityEntered = results['enter'].toString();
+       _cityEntered = results['enter'].toString();
+     }
+     else{
+       _cityEntered = util.defaultCity;
      }
   }
 
-  void showStuff() async {
-    Map data = await getWeather(util.appId,util.defaultCity);
-    print(data.toString());
-  }
+//  void showStuff() async {
+//    Map data = await getWeather(util.appId,util.defaultCity);
+//    print(data.toString());
+//  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +83,7 @@ class _KlimaticState extends State<Klimatic> {
               child: new Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                    new Text(content['main']['temp'].toString()+" F",style: new TextStyle(
+                    new Text(content['main']['temp'].toString()+" C",style: new TextStyle(
                         fontSize: 49.9,color: Colors.white,fontWeight: FontWeight.w500),),
                   
                     new Text("Humidity: ${content['main']['temp'].toString()}\n"
@@ -102,15 +105,16 @@ class _KlimaticState extends State<Klimatic> {
   }
 
   Future<Map> getWeather(String appId,String city) async{
-    String apiUrl = "http://api.openweathermap.org/data/2.5/weather?q=$city&appid=${util.appId}&units=imperial";
+    String apiUrl = "http://api.openweathermap.org/data/2.5/weather?q=$city&appid=${util.appId}&units=metric";
     http.Response response = await http.get(apiUrl);
     return json.decode(response.body);
   }
 }
 
 
-class changeCity extends StatelessWidget {
-  var _cityFieldController = new TextEditingController();
+class ChangeCity extends StatelessWidget {
+  final _cityFieldController = new TextEditingController();
+  final String finalEnteredString = "";
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -141,8 +145,14 @@ class changeCity extends StatelessWidget {
 
               new Padding(padding: EdgeInsets.all(10.0)),
               new FlatButton(onPressed: (){
+                String enteredString = _cityFieldController.text;
+                if(enteredString.isEmpty){
+                  enteredString = util.defaultCity;
+                }else{
+                  enteredString = _cityFieldController.text;
+                }
                 Navigator.pop(context,{
-                  'enter': _cityFieldController.text
+                  'enter' : enteredString,
                 });
               },color: Colors.redAccent,textColor: Colors.white,
                   child: new Text("Get Weather",style: new TextStyle(fontSize: 18.0),))
